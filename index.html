@@ -373,6 +373,42 @@
             </div>
         </section>
 
+        <!-- Data Table Section: Otros Gastos Operativos -->
+        <section class="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden transition-colors">
+            <div class="p-5 border-b border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                <div>
+                    <div class="flex items-center gap-2">
+                        <h3 class="font-bold text-slate-800 dark:text-slate-100 text-base flex items-center gap-2">
+                            <i class="fa-solid fa-receipt text-rose-500"></i> Otros Gastos Operativos
+                        </h3>
+                        <span id="badge-total-gastos" class="text-xs font-bold text-rose-600 bg-rose-50 dark:bg-rose-950/50 dark:text-rose-400 px-2.5 py-0.5 rounded-full border border-rose-200 dark:border-rose-900/50">$0,00</span>
+                    </div>
+                    <p class="text-xs text-slate-500 dark:text-slate-400">Desglose acumulado por concepto de gasto según sucursal y filtros aplicados</p>
+                </div>
+                <div class="relative w-full sm:w-64">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-400 text-xs"></i>
+                    <input type="text" id="search-gasto" onkeyup="renderGastosTable()" placeholder="Buscar gasto o concepto..." class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg pl-8 pr-3 py-1.5 text-xs text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-rose-500">
+                </div>
+            </div>
+
+            <div class="overflow-x-auto custom-scrollbar">
+                <table class="w-full text-left text-xs border-collapse">
+                    <thead>
+                        <tr class="bg-slate-100 dark:bg-slate-800/80 text-slate-600 dark:text-slate-300 uppercase font-bold text-[11px] border-b border-slate-200 dark:border-slate-700">
+                            <th class="py-3 px-4">Concepto / Categoría</th>
+                            <th class="py-3 px-4 text-right">Monto Total ($)</th>
+                            <th class="py-3 px-4 text-right">% Participación</th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-gastos-body" class="divide-y divide-slate-100 dark:divide-slate-800 text-slate-700 dark:text-slate-300">
+                        <tr>
+                            <td colspan="3" class="py-8 text-center text-slate-400">Cargando datos de gastos...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
     </main>
 
     <!-- Footer -->
@@ -388,14 +424,17 @@
         const URL_FLETES = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSCYdk17PpHG-8eAKmgOxC4axQTWetIM-j5DkoX0KiEWxWd2ZwbyHny0e8G2TWJ_rIayJD0eYx0qj1c/pub?gid=96774933&single=true&output=csv";
         const URL_VENTAS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSCYdk17PpHG-8eAKmgOxC4axQTWetIM-j5DkoX0KiEWxWd2ZwbyHny0e8G2TWJ_rIayJD0eYx0qj1c/pub?gid=1651060898&single=true&output=csv";
         const URL_HC = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSCYdk17PpHG-8eAKmgOxC4axQTWetIM-j5DkoX0KiEWxWd2ZwbyHny0e8G2TWJ_rIayJD0eYx0qj1c/pub?gid=223799181&single=true&output=csv";
+        const URL_GASTOS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSCYdk17PpHG-8eAKmgOxC4axQTWetIM-j5DkoX0KiEWxWd2ZwbyHny0e8G2TWJ_rIayJD0eYx0qj1c/pub?gid=1139207667&single=true&output=csv";
 
         // Global Data Store
         let rawFletes = [];
         let rawVentas = [];
         let rawHC = [];
+        let rawGastos = [];
         let filteredFletes = [];
         let filteredVentas = [];
         let filteredHC = [];
+        let filteredGastos = [];
 
         // Chart instances
         let chartTendencia = null;
@@ -479,7 +518,7 @@
             refreshIcon.classList.add('fa-spin');
 
             try {
-                const [respFletes, respVentas, respHC] = await Promise.all([
+                const [respFletes, respVentas, respHC, respGastos] = await Promise.all([
                     fetch(URL_FLETES).then(res => {
                         if (!res.ok) throw new Error('Error al obtener Fletes');
                         return res.text();
@@ -491,6 +530,10 @@
                     fetch(URL_HC).then(res => {
                         if (!res.ok) throw new Error('Error al obtener HC');
                         return res.text();
+                    }),
+                    fetch(URL_GASTOS).then(res => {
+                        if (!res.ok) throw new Error('Error al obtener Gastos');
+                        return res.text();
                     })
                 ]);
 
@@ -498,10 +541,12 @@
                 const parsedFletes = Papa.parse(respFletes, { header: true, skipEmptyLines: true });
                 const parsedVentas = Papa.parse(respVentas, { header: true, skipEmptyLines: true });
                 const parsedHC = Papa.parse(respHC, { header: true, skipEmptyLines: true });
+                const parsedGastos = Papa.parse(respGastos, { header: true, skipEmptyLines: true });
 
                 rawFletes = parsedFletes.data || [];
                 rawVentas = parsedVentas.data || [];
                 rawHC = parsedHC.data || [];
+                rawGastos = parsedGastos.data || [];
 
                 statusDot.className = "w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block mr-2";
                 statusText.textContent = `Actualizado: ${new Date().toLocaleTimeString()}`;
@@ -544,13 +589,15 @@
             const sucursales = getUniqueOptions([
                 ...rawVentas.map(r => findKey(r, 'SUCURSAL')),
                 ...rawFletes.map(r => findKey(r, 'Sucursal')),
-                ...rawHC.map(r => findKey(r, 'Sucursal'))
+                ...rawHC.map(r => findKey(r, 'Sucursal')),
+                ...rawGastos.map(r => findKey(r, 'Sucursal') || findKey(r, 'SUCURSAL'))
             ]);
 
             const grupos = getUniqueOptions([
                 ...rawVentas.map(r => findKey(r, 'Grupo')),
                 ...rawFletes.map(r => findKey(r, 'Grupo')),
-                ...rawHC.map(r => findKey(r, 'Grupo'))
+                ...rawHC.map(r => findKey(r, 'Grupo')),
+                ...rawGastos.map(r => findKey(r, 'Grupo'))
             ]);
 
             const flotas = getUniqueOptions([
@@ -560,7 +607,8 @@
             const meses = getUniqueOptions([
                 ...rawVentas.map(r => findKey(r, 'Mes')),
                 ...rawFletes.map(r => findKey(r, 'Mes')),
-                ...rawHC.map(r => findKey(r, 'Mes'))
+                ...rawHC.map(r => findKey(r, 'Mes')),
+                ...rawGastos.map(r => findKey(r, 'Mes'))
             ]);
 
             const fillSelect = (id, options) => {
@@ -623,16 +671,38 @@
                 return matchVal(suc, selSucursal) && matchVal(grp, selGrupo) && matchVal(flo, selFlota) && matchVal(mes, selMes);
             });
 
+            const hasProp = (row, propName) => {
+                return row && Object.keys(row).some(k => k.trim().toLowerCase() === propName.toLowerCase());
+            };
+
+            filteredGastos = rawGastos.filter(r => {
+                const suc = getProp(r, 'Sucursal') || getProp(r, 'SUCURSAL');
+                const grp = getProp(r, 'Grupo');
+                const mes = getProp(r, 'Mes');
+
+                const matchSuc = matchVal(suc, selSucursal);
+                const matchGrp = !hasProp(r, 'Grupo') || matchVal(grp, selGrupo);
+                const matchMes = !hasProp(r, 'Mes') || matchVal(mes, selMes);
+
+                return matchSuc && matchGrp && matchMes;
+            });
+
             filteredHC = rawHC.filter(r => {
                 const suc = getProp(r, 'Sucursal') || getProp(r, 'SUCURSAL');
                 const grp = getProp(r, 'Grupo');
                 const mes = getProp(r, 'Mes');
-                return matchVal(suc, selSucursal) && matchVal(grp, selGrupo) && matchVal(mes, selMes);
+
+                const matchSuc = matchVal(suc, selSucursal);
+                const matchGrp = !hasProp(r, 'Grupo') || matchVal(grp, selGrupo);
+                const matchMes = !hasProp(r, 'Mes') || matchVal(mes, selMes);
+
+                return matchSuc && matchGrp && matchMes;
             });
 
             updateKPIs();
             updateCharts();
             renderRubrosTable();
+            renderGastosTable();
         }
 
         function updateKPIs() {
@@ -678,9 +748,19 @@
                 if (!row) return 0;
                 const key = Object.keys(row).find(k => {
                     const l = k.trim().toLowerCase();
-                    return l.includes('colaborador') || l.includes('trabajador') || l.includes('hc') || l.includes('personal') || l.includes('cantidad') || l.includes('nro');
+                    return l.includes('colaborador') || l.includes('trabajador') || l.includes('hc') || l.includes('personal') || l.includes('cantidad') || l.includes('nro') || l.includes('empleado') || l.includes('dotacion') || l.includes('headcount');
                 });
-                return key ? parseNum(row[key]) : 0;
+                if (key) return parseNum(row[key]);
+
+                // Búsqueda alternativa por valor numérico
+                for (let k of Object.keys(row)) {
+                    const l = k.trim().toLowerCase();
+                    if (l !== 'sucursal' && l !== 'grupo' && l !== 'mes' && l !== 'fecha' && l !== '') {
+                        const val = parseNum(row[k]);
+                        if (val > 0) return val;
+                    }
+                }
+                return 0;
             };
 
             const selMes = document.getElementById('filter-mes').value.toLowerCase();
@@ -964,9 +1044,19 @@
                 if (!row) return 0;
                 const key = Object.keys(row).find(k => {
                     const l = k.trim().toLowerCase();
-                    return l.includes('colaborador') || l.includes('trabajador') || l.includes('hc') || l.includes('personal') || l.includes('cantidad') || l.includes('nro');
+                    return l.includes('colaborador') || l.includes('trabajador') || l.includes('hc') || l.includes('personal') || l.includes('cantidad') || l.includes('nro') || l.includes('empleado') || l.includes('dotacion') || l.includes('headcount');
                 });
-                return key ? parseNum(row[key]) : 0;
+                if (key) return parseNum(row[key]);
+
+                // Búsqueda alternativa por valor numérico
+                for (let k of Object.keys(row)) {
+                    const l = k.trim().toLowerCase();
+                    if (l !== 'sucursal' && l !== 'grupo' && l !== 'mes' && l !== 'fecha' && l !== '') {
+                        const val = parseNum(row[k]);
+                        if (val > 0) return val;
+                    }
+                }
+                return 0;
             };
 
             const ventasSucursal = {};
@@ -1120,6 +1210,77 @@
                             <span>${item.pct.toLocaleString('es-ES', { minimumFractionDigits: 1, maximumFractionDigits: 1 })}%</span>
                             <div class="w-12 bg-slate-200 dark:bg-slate-700 h-1.5 rounded-full overflow-hidden">
                                 <div class="bg-blue-600 dark:bg-blue-500 h-full rounded-full" style="width: ${Math.min(item.pct, 100)}%"></div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function renderGastosTable() {
+            const searchTerm = (document.getElementById('search-gasto')?.value || '').toLowerCase();
+
+            const gastosMap = {};
+            let totalGastosSum = 0;
+
+            const isMetadataKey = (keyName) => {
+                if (!keyName) return true;
+                const l = keyName.trim().toLowerCase();
+                return l === 'sucursal' || l === 'grupo' || l === 'mes' || l === 'fecha' || l === 'total' || l === 'totales' || l === '';
+            };
+
+            filteredGastos.forEach(r => {
+                Object.keys(r).forEach(key => {
+                    if (isMetadataKey(key)) return;
+                    const concepto = key.trim();
+                    const monto = parseNum(r[key]);
+
+                    if (monto !== 0 || concepto) {
+                        totalGastosSum += monto;
+                        if (!gastosMap[concepto]) {
+                            gastosMap[concepto] = 0;
+                        }
+                        gastosMap[concepto] += monto;
+                    }
+                });
+            });
+
+            // Actualiza la insignia del total de gastos
+            const badgeTotal = document.getElementById('badge-total-gastos');
+            if (badgeTotal) {
+                badgeTotal.textContent = 'Total: ' + formatUSD(totalGastosSum);
+            }
+
+            const gastosList = Object.keys(gastosMap).map(name => {
+                const m = gastosMap[name];
+                const pct = totalGastosSum > 0 ? ((m / totalGastosSum) * 100) : 0;
+                return { name, monto: m, pct };
+            }).filter(item => item.monto > 0 || item.name !== '')
+              .sort((a, b) => b.monto - a.monto);
+
+            const filteredGastosList = gastosList.filter(item => item.name.toLowerCase().includes(searchTerm));
+
+            const tbody = document.getElementById('table-gastos-body');
+            if (!tbody) return;
+
+            if (filteredGastosList.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="3" class="py-6 text-center text-slate-400">No se encontraron gastos con los filtros seleccionados.</td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = filteredGastosList.map(item => `
+                <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                    <td class="py-3 px-4 font-semibold text-slate-800 dark:text-slate-100">${item.name}</td>
+                    <td class="py-3 px-4 text-right font-bold text-rose-600 dark:text-rose-400">${formatUSD(item.monto)}</td>
+                    <td class="py-3 px-4 text-right font-medium text-slate-600 dark:text-slate-400">
+                        <div class="flex items-center justify-end space-x-2">
+                            <span>${item.pct.toLocaleString('es-ES', { minimumFractionDigits: 1, maximumFractionDigits: 1 })}%</span>
+                            <div class="w-12 bg-slate-200 dark:bg-slate-700 h-1.5 rounded-full overflow-hidden">
+                                <div class="bg-rose-500 h-full rounded-full" style="width: ${Math.min(item.pct, 100)}%"></div>
                             </div>
                         </div>
                     </td>
