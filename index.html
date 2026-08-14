@@ -170,7 +170,7 @@
                         <span class="text-xs bg-purple-100 dark:bg-purple-900/50 text-purple-800 dark:text-purple-300 font-medium px-2.5 py-0.5 rounded-full">Personal</span>
                     </div>
 
-                    <div class="space-y-4">
+                    <div class="space-y-3">
                         <div>
                             <p class="text-xs text-slate-500 dark:text-slate-400 font-medium uppercase">Ventas / Colaborador</p>
                             <p id="kpi-ventas-colaborador" class="text-2xl font-black text-purple-600 dark:text-purple-400">$0,00</p>
@@ -184,6 +184,17 @@
                             <div>
                                 <p class="text-xs text-slate-500 dark:text-slate-400">Kilos / Colaborador</p>
                                 <p id="kpi-kilos-colaborador" class="text-sm font-bold text-slate-800 dark:text-slate-200">0 Kg</p>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+                            <div>
+                                <p class="text-xs text-slate-500 dark:text-slate-400">N° Choferes</p>
+                                <p id="kpi-total-choferes" class="text-sm font-bold text-purple-600 dark:text-purple-400">0</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-slate-500 dark:text-slate-400">Vehículos Carga</p>
+                                <p id="kpi-vehiculos-carga" class="text-sm font-bold text-purple-600 dark:text-purple-400">0</p>
                             </div>
                         </div>
                     </div>
@@ -431,16 +442,23 @@
         const URL_VENTAS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSCYdk17PpHG-8eAKmgOxC4axQTWetIM-j5DkoX0KiEWxWd2ZwbyHny0e8G2TWJ_rIayJD0eYx0qj1c/pub?gid=1651060898&single=true&output=csv";
         const URL_HC = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSCYdk17PpHG-8eAKmgOxC4axQTWetIM-j5DkoX0KiEWxWd2ZwbyHny0e8G2TWJ_rIayJD0eYx0qj1c/pub?gid=223799181&single=true&output=csv";
         const URL_GASTOS = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSCYdk17PpHG-8eAKmgOxC4axQTWetIM-j5DkoX0KiEWxWd2ZwbyHny0e8G2TWJ_rIayJD0eYx0qj1c/pub?gid=1139207667&single=true&output=csv";
+        const URL_FLOTA = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSCYdk17PpHG-8eAKmgOxC4axQTWetIM-j5DkoX0KiEWxWd2ZwbyHny0e8G2TWJ_rIayJD0eYx0qj1c/pub?gid=1649690469&single=true&output=csv";
+        const URL_CHOFERES = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSCYdk17PpHG-8eAKmgOxC4axQTWetIM-j5DkoX0KiEWxWd2ZwbyHny0e8G2TWJ_rIayJD0eYx0qj1c/pub?gid=1512612518&single=true&output=csv";
 
         // Global Data Store
         let rawFletes = [];
         let rawVentas = [];
         let rawHC = [];
         let rawGastos = [];
+        let rawFlota = [];
+        let rawChoferes = [];
+
         let filteredFletes = [];
         let filteredVentas = [];
         let filteredHC = [];
         let filteredGastos = [];
+        let filteredFlota = [];
+        let filteredChoferes = [];
 
         // Chart instances
         let chartTendencia = null;
@@ -524,7 +542,7 @@
             refreshIcon.classList.add('fa-spin');
 
             try {
-                const [respFletes, respVentas, respHC, respGastos] = await Promise.all([
+                const [respFletes, respVentas, respHC, respGastos, respFlota, respChoferes] = await Promise.all([
                     fetch(URL_FLETES).then(res => {
                         if (!res.ok) throw new Error('Error al obtener Fletes');
                         return res.text();
@@ -540,19 +558,30 @@
                     fetch(URL_GASTOS).then(res => {
                         if (!res.ok) throw new Error('Error al obtener Gastos');
                         return res.text();
+                    }),
+                    fetch(URL_FLOTA).then(res => {
+                        if (!res.ok) throw new Error('Error al obtener Flota Propia');
+                        return res.text();
+                    }),
+                    fetch(URL_CHOFERES).then(res => {
+                        if (!res.ok) throw new Error('Error al obtener Choferes');
+                        return res.text();
                     })
                 ]);
 
-                // Parse CSV using PapaParse
                 const parsedFletes = Papa.parse(respFletes, { header: true, skipEmptyLines: true });
                 const parsedVentas = Papa.parse(respVentas, { header: true, skipEmptyLines: true });
                 const parsedHC = Papa.parse(respHC, { header: true, skipEmptyLines: true });
                 const parsedGastos = Papa.parse(respGastos, { header: true, skipEmptyLines: true });
+                const parsedFlota = Papa.parse(respFlota, { header: true, skipEmptyLines: true });
+                const parsedChoferes = Papa.parse(respChoferes, { header: true, skipEmptyLines: true });
 
                 rawFletes = parsedFletes.data || [];
                 rawVentas = parsedVentas.data || [];
                 rawHC = parsedHC.data || [];
                 rawGastos = parsedGastos.data || [];
+                rawFlota = parsedFlota.data || [];
+                rawChoferes = parsedChoferes.data || [];
 
                 statusDot.className = "w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block mr-2";
                 statusText.textContent = `Actualizado: ${new Date().toLocaleTimeString()}`;
@@ -576,7 +605,6 @@
                 return k ? row[k] : '';
             };
 
-            // Helper para unificar opciones ignorando diferencias de mayúsculas/minúsculas y espacios
             const getUniqueOptions = (list) => {
                 const map = new Map();
                 list.forEach(item => {
@@ -596,25 +624,18 @@
                 ...rawVentas.map(r => findKey(r, 'SUCURSAL')),
                 ...rawFletes.map(r => findKey(r, 'Sucursal')),
                 ...rawHC.map(r => findKey(r, 'Sucursal')),
-                ...rawGastos.map(r => findKey(r, 'Sucursal') || findKey(r, 'SUCURSAL'))
-            ]);
-
-            const grupos = getUniqueOptions([
-                ...rawVentas.map(r => findKey(r, 'Grupo')),
-                ...rawFletes.map(r => findKey(r, 'Grupo')),
-                ...rawHC.map(r => findKey(r, 'Grupo')),
-                ...rawGastos.map(r => findKey(r, 'Grupo'))
-            ]);
-
-            const flotas = getUniqueOptions([
-                ...rawFletes.map(r => findKey(r, 'Tipo de Flota'))
+                ...rawGastos.map(r => findKey(r, 'Sucursal') || findKey(r, 'SUCURSAL')),
+                ...rawFlota.map(r => findKey(r, 'Sucursal') || findKey(r, 'SUCURSAL')),
+                ...rawChoferes.map(r => findKey(r, 'Sucursal') || findKey(r, 'SUCURSAL'))
             ]);
 
             const meses = getUniqueOptions([
                 ...rawVentas.map(r => findKey(r, 'Mes')),
                 ...rawFletes.map(r => findKey(r, 'Mes')),
                 ...rawHC.map(r => findKey(r, 'Mes')),
-                ...rawGastos.map(r => findKey(r, 'Mes'))
+                ...rawGastos.map(r => findKey(r, 'Mes')),
+                ...rawFlota.map(r => findKey(r, 'Mes')),
+                ...rawChoferes.map(r => findKey(r, 'Mes'))
             ]);
 
             const fillSelect = (id, options) => {
@@ -644,8 +665,6 @@
 
         function applyFilters() {
             const selSucursal = document.getElementById('filter-sucursal').value.toLowerCase();
-            const selGrupo = 'all';
-            const selFlota = 'all';
             const selMes = document.getElementById('filter-mes').value.toLowerCase();
 
             const matchVal = (rowVal, target) => {
@@ -658,47 +677,60 @@
                 return key ? row[key] : '';
             };
 
-            filteredVentas = rawVentas.filter(r => {
-                const suc = getProp(r, 'SUCURSAL');
-                const grp = getProp(r, 'Grupo');
-                const mes = getProp(r, 'Mes');
-                return matchVal(suc, selSucursal) && matchVal(grp, selGrupo) && matchVal(mes, selMes);
-            });
-
-            filteredFletes = rawFletes.filter(r => {
-                const suc = getProp(r, 'Sucursal');
-                const grp = getProp(r, 'Grupo');
-                const flo = getProp(r, 'Tipo de Flota');
-                const mes = getProp(r, 'Mes');
-                return matchVal(suc, selSucursal) && matchVal(grp, selGrupo) && matchVal(flo, selFlota) && matchVal(mes, selMes);
-            });
-
             const hasProp = (row, propName) => {
                 return row && Object.keys(row).some(k => k.trim().toLowerCase() === propName.toLowerCase());
             };
 
+            filteredVentas = rawVentas.filter(r => {
+                const suc = getProp(r, 'SUCURSAL') || getProp(r, 'Sucursal');
+                const mes = getProp(r, 'Mes');
+                return matchVal(suc, selSucursal) && matchVal(mes, selMes);
+            });
+
+            filteredFletes = rawFletes.filter(r => {
+                const suc = getProp(r, 'Sucursal') || getProp(r, 'SUCURSAL');
+                const mes = getProp(r, 'Mes');
+                return matchVal(suc, selSucursal) && matchVal(mes, selMes);
+            });
+
             filteredGastos = rawGastos.filter(r => {
                 const suc = getProp(r, 'Sucursal') || getProp(r, 'SUCURSAL');
-                const grp = getProp(r, 'Grupo');
                 const mes = getProp(r, 'Mes');
 
                 const matchSuc = matchVal(suc, selSucursal);
-                const matchGrp = !hasProp(r, 'Grupo') || matchVal(grp, selGrupo);
                 const matchMes = !hasProp(r, 'Mes') || matchVal(mes, selMes);
 
-                return matchSuc && matchGrp && matchMes;
+                return matchSuc && matchMes;
             });
 
             filteredHC = rawHC.filter(r => {
                 const suc = getProp(r, 'Sucursal') || getProp(r, 'SUCURSAL');
-                const grp = getProp(r, 'Grupo');
                 const mes = getProp(r, 'Mes');
 
                 const matchSuc = matchVal(suc, selSucursal);
-                const matchGrp = !hasProp(r, 'Grupo') || matchVal(grp, selGrupo);
                 const matchMes = !hasProp(r, 'Mes') || matchVal(mes, selMes);
 
-                return matchSuc && matchGrp && matchMes;
+                return matchSuc && matchMes;
+            });
+
+            filteredFlota = rawFlota.filter(r => {
+                const suc = getProp(r, 'Sucursal') || getProp(r, 'SUCURSAL');
+                const mes = getProp(r, 'Mes');
+
+                const matchSuc = matchVal(suc, selSucursal);
+                const matchMes = !hasProp(r, 'Mes') || matchVal(mes, selMes);
+
+                return matchSuc && matchMes;
+            });
+
+            filteredChoferes = rawChoferes.filter(r => {
+                const suc = getProp(r, 'Sucursal') || getProp(r, 'SUCURSAL');
+                const mes = getProp(r, 'Mes');
+
+                const matchSuc = matchVal(suc, selSucursal);
+                const matchMes = !hasProp(r, 'Mes') || matchVal(mes, selMes);
+
+                return matchSuc && matchMes;
             });
 
             updateKPIs();
@@ -779,7 +811,6 @@
                 });
                 if (key) return parseNum(row[key]);
 
-                // Búsqueda alternativa por valor numérico
                 for (let k of Object.keys(row)) {
                     const l = k.trim().toLowerCase();
                     if (l !== 'sucursal' && l !== 'grupo' && l !== 'mes' && l !== 'fecha' && l !== '') {
@@ -816,6 +847,108 @@
             const ventasPorColaborador = totalColaboradores > 0 ? (totalVentas / totalColaboradores) : 0;
             const kilosPorColaborador = totalColaboradores > 0 ? (totalKilosVendidos / totalColaboradores) : 0;
 
+            // --- Cálculo de Choferes ---
+            const getChoferesVal = (row) => {
+                if (!row) return 0;
+                const key = Object.keys(row).find(k => {
+                    const l = k.trim().toLowerCase();
+                    return l.includes('chofer') || l.includes('conductor') || l.includes('cantidad') || l.includes('nro') || l.includes('num') || l.includes('personal') || l.includes('dotacion');
+                });
+                if (key) return parseNum(row[key]);
+
+                for (let k of Object.keys(row)) {
+                    const l = k.trim().toLowerCase();
+                    if (l !== 'sucursal' && l !== 'grupo' && l !== 'mes' && l !== 'fecha' && l !== '') {
+                        const val = parseNum(row[k]);
+                        if (val > 0) return val;
+                    }
+                }
+                return 1;
+            };
+
+            let totalChoferes = 0;
+            const hasMesInChoferes = filteredChoferes.some(r => getProp(r, 'Mes') !== '');
+
+            if (hasMesInChoferes && selMes === 'all') {
+                const choferesByMonth = {};
+                filteredChoferes.forEach(r => {
+                    const m = getProp(r, 'Mes').toLowerCase();
+                    if (m) {
+                        choferesByMonth[m] = (choferesByMonth[m] || 0) + getChoferesVal(r);
+                    }
+                });
+                const monthsCount = Object.keys(choferesByMonth).length;
+                if (monthsCount > 0) {
+                    const sumChoferes = Object.values(choferesByMonth).reduce((acc, v) => acc + v, 0);
+                    totalChoferes = Math.round(sumChoferes / monthsCount);
+                } else {
+                    totalChoferes = filteredChoferes.reduce((acc, r) => acc + getChoferesVal(r), 0);
+                }
+            } else {
+                totalChoferes = filteredChoferes.reduce((acc, r) => acc + getChoferesVal(r), 0);
+            }
+
+            // --- Cálculo de Vehículos de Carga ---
+            const getUsoVal = (row) => {
+                if (!row) return '';
+                const key = Object.keys(row).find(k => {
+                    const l = k.trim().toLowerCase();
+                    return l.includes('uso') || l.includes('tipo') || l.includes('clasificac') || l.includes('categoria');
+                });
+                return key ? String(row[key] || '').trim().toLowerCase() : '';
+            };
+
+            const getCantidadVehiculos = (row) => {
+                if (!row) return 0;
+                const key = Object.keys(row).find(k => {
+                    const l = k.trim().toLowerCase();
+                    return l.includes('cantidad') || l.includes('cant') || l.includes('nro') || l.includes('num') || l.includes('unidades');
+                });
+                if (key) {
+                    const val = parseNum(row[key]);
+                    if (val > 0) return val;
+                }
+                return 1;
+            };
+
+            const getCargaValInRow = (r) => {
+                let isCarga = false;
+                const uso = getUsoVal(r);
+                if (uso.includes('carga')) {
+                    isCarga = true;
+                } else {
+                    for (let k of Object.keys(r)) {
+                        if (String(r[k] || '').trim().toLowerCase().includes('carga')) {
+                            isCarga = true;
+                            break;
+                        }
+                    }
+                }
+                return isCarga ? getCantidadVehiculos(r) : 0;
+            };
+
+            let totalVehiculosCarga = 0;
+            const hasMesInFlota = filteredFlota.some(r => getProp(r, 'Mes') !== '');
+
+            if (hasMesInFlota && selMes === 'all') {
+                const vehByMonth = {};
+                filteredFlota.forEach(r => {
+                    const m = getProp(r, 'Mes').toLowerCase();
+                    if (m) {
+                        vehByMonth[m] = (vehByMonth[m] || 0) + getCargaValInRow(r);
+                    }
+                });
+                const monthsCount = Object.keys(vehByMonth).length;
+                if (monthsCount > 0) {
+                    const sumVeh = Object.values(vehByMonth).reduce((acc, v) => acc + v, 0);
+                    totalVehiculosCarga = Math.round(sumVeh / monthsCount);
+                } else {
+                    totalVehiculosCarga = filteredFlota.reduce((acc, r) => acc + getCargaValInRow(r), 0);
+                }
+            } else {
+                totalVehiculosCarga = filteredFlota.reduce((acc, r) => acc + getCargaValInRow(r), 0);
+            }
+
             document.getElementById('kpi-total-ventas').textContent = formatUSD(totalVentas);
             document.getElementById('kpi-kilos-vendidos').textContent = formatNumber(totalKilosVendidos) + ' Kg';
             document.getElementById('kpi-precio-promedio').textContent = formatUSD(precioPromedio) + ' / Kg';
@@ -842,6 +975,8 @@
             document.getElementById('kpi-ventas-colaborador').textContent = formatUSD(ventasPorColaborador);
             document.getElementById('kpi-total-colaboradores').textContent = formatNumber(totalColaboradores);
             document.getElementById('kpi-kilos-colaborador').textContent = formatNumber(kilosPorColaborador) + ' Kg';
+            document.getElementById('kpi-total-choferes').textContent = formatNumber(totalChoferes);
+            document.getElementById('kpi-vehiculos-carga').textContent = formatNumber(totalVehiculosCarga);
         }
 
         function updateCharts() {
