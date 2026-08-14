@@ -100,28 +100,12 @@
                 </button>
             </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <!-- Filter Sucursal -->
                 <div>
                     <label class="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">SUCURSAL</label>
                     <select id="filter-sucursal" onchange="applyFilters()" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500">
                         <option value="ALL">Todas las Sucursales</option>
-                    </select>
-                </div>
-
-                <!-- Filter Grupo -->
-                <div>
-                    <label class="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">GRUPO</label>
-                    <select id="filter-grupo" onchange="applyFilters()" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        <option value="ALL">Todos los Grupos</option>
-                    </select>
-                </div>
-
-                <!-- Filter Tipo de Flota -->
-                <div>
-                    <label class="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">TIPO DE FLOTA</label>
-                    <select id="filter-flota" onchange="applyFilters()" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        <option value="ALL">Todas las Flotas</option>
                     </select>
                 </div>
 
@@ -172,7 +156,41 @@
                 </div>
             </div>
 
-            <!-- Card 2: Impacto Logistico -->
+            <!-- Card 2: Ventas por Colaborador (HC) -->
+            <div class="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-800 relative overflow-hidden flex flex-col justify-between transition-colors">
+                <div class="absolute top-0 right-0 w-24 h-24 bg-purple-50 dark:bg-purple-950/30 rounded-bl-full -mr-4 -mt-4 pointer-events-none"></div>
+                <div>
+                    <div class="flex justify-between items-center mb-4">
+                        <div class="flex items-center space-x-2">
+                            <span class="p-2 bg-purple-100 dark:bg-purple-900/50 text-purple-600 dark:text-purple-400 rounded-lg">
+                                <i class="fa-solid fa-users text-lg"></i>
+                            </span>
+                            <h3 class="font-bold text-slate-800 dark:text-slate-100 text-base">Productividad HC</h3>
+                        </div>
+                        <span class="text-xs bg-purple-100 dark:bg-purple-900/50 text-purple-800 dark:text-purple-300 font-medium px-2.5 py-0.5 rounded-full">Personal</span>
+                    </div>
+
+                    <div class="space-y-4">
+                        <div>
+                            <p class="text-xs text-slate-500 dark:text-slate-400 font-medium uppercase">Ventas / Colaborador</p>
+                            <p id="kpi-ventas-colaborador" class="text-2xl font-black text-purple-600 dark:text-purple-400">$0,00</p>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
+                            <div>
+                                <p class="text-xs text-slate-500 dark:text-slate-400">Total Colaboradores</p>
+                                <p id="kpi-total-colaboradores" class="text-sm font-bold text-slate-800 dark:text-slate-200">0</p>
+                            </div>
+                            <div>
+                                <p class="text-xs text-slate-500 dark:text-slate-400">Kilos / Colaborador</p>
+                                <p id="kpi-kilos-colaborador" class="text-sm font-bold text-slate-800 dark:text-slate-200">0 Kg</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 3: Impacto Logistico -->
             <div class="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-800 relative overflow-hidden flex flex-col justify-between transition-colors">
                 <div class="absolute top-0 right-0 w-24 h-24 bg-blue-50 dark:bg-blue-950/30 rounded-bl-full -mr-4 -mt-4 pointer-events-none"></div>
                 <div>
@@ -215,7 +233,7 @@
                 </div>
             </div>
 
-            <!-- Card 3: Resumen Global & Ratio % -->
+            <!-- Card 4: Resumen Global & Ratio % -->
             <div class="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-800 relative overflow-hidden flex flex-col justify-between transition-colors">
                 <div class="absolute top-0 right-0 w-24 h-24 bg-amber-50 dark:bg-amber-950/30 rounded-bl-full -mr-4 -mt-4 pointer-events-none"></div>
                 <div>
@@ -229,54 +247,41 @@
                         <span class="text-xs bg-amber-100 dark:bg-amber-900/50 text-amber-800 dark:text-amber-300 font-medium px-2.5 py-0.5 rounded-full">Indicador</span>
                     </div>
 
-                    <div class="space-y-4">
-                        <div>
-                            <p class="text-xs text-slate-500 dark:text-slate-400 font-medium uppercase">Costo Total Flete</p>
-                            <p id="kpi-costo-total-flete" class="text-2xl font-black text-slate-900 dark:text-slate-50">$0.00</p>
-                        </div>
-
-                        <div class="grid grid-cols-2 gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-baseline">
                             <div>
-                                <p class="text-xs text-slate-500 dark:text-slate-400">% Incidencia s/ Ventas</p>
+                                <p class="text-xs text-slate-500 dark:text-slate-400 font-medium uppercase">Costo Total Flete</p>
+                                <p id="kpi-costo-total-flete" class="text-2xl font-black text-slate-900 dark:text-slate-50">$0.00</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-xs text-slate-500 dark:text-slate-400">% Incidencia</p>
                                 <p id="kpi-porcentaje-flete" class="text-sm font-bold text-amber-600 dark:text-amber-400">0.00%</p>
                             </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
                             <div>
-                                <p class="text-xs text-slate-500 dark:text-slate-400">Costo Flete x Kg</p>
-                                <p id="kpi-costo-kg-flete" class="text-sm font-bold text-slate-800 dark:text-slate-200">$0.00 / Kg</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Card 4: Ventas por Colaborador (HC) -->
-            <div class="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-sm border border-slate-200 dark:border-slate-800 relative overflow-hidden flex flex-col justify-between transition-colors">
-                <div class="absolute top-0 right-0 w-24 h-24 bg-purple-50 dark:bg-purple-950/30 rounded-bl-full -mr-4 -mt-4 pointer-events-none"></div>
-                <div>
-                    <div class="flex justify-between items-center mb-4">
-                        <div class="flex items-center space-x-2">
-                            <span class="p-2 bg-purple-100 dark:bg-purple-900/50 text-purple-600 dark:text-purple-400 rounded-lg">
-                                <i class="fa-solid fa-users text-lg"></i>
-                            </span>
-                            <h3 class="font-bold text-slate-800 dark:text-slate-100 text-base">Productividad HC</h3>
-                        </div>
-                        <span class="text-xs bg-purple-100 dark:bg-purple-900/50 text-purple-800 dark:text-purple-300 font-medium px-2.5 py-0.5 rounded-full">Personal</span>
-                    </div>
-
-                    <div class="space-y-4">
-                        <div>
-                            <p class="text-xs text-slate-500 dark:text-slate-400 font-medium uppercase">Ventas / Colaborador</p>
-                            <p id="kpi-ventas-colaborador" class="text-2xl font-black text-purple-600 dark:text-purple-400">$0,00</p>
-                        </div>
-
-                        <div class="grid grid-cols-2 gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
-                            <div>
-                                <p class="text-xs text-slate-500 dark:text-slate-400">Total Colaboradores</p>
-                                <p id="kpi-total-colaboradores" class="text-sm font-bold text-slate-800 dark:text-slate-200">0</p>
+                                <p class="text-[11px] text-slate-500 dark:text-slate-400 font-medium uppercase">Flete / Kg (Global)</p>
+                                <p id="kpi-costo-kg-flete" class="text-xs font-bold text-slate-800 dark:text-slate-200">$0.00 / Kg</p>
                             </div>
                             <div>
-                                <p class="text-xs text-slate-500 dark:text-slate-400">Kilos / Colaborador</p>
-                                <p id="kpi-kilos-colaborador" class="text-sm font-bold text-slate-800 dark:text-slate-200">0 Kg</p>
+                                <p class="text-[11px] text-slate-500 dark:text-slate-400 font-medium uppercase">Kilos Prom. / Viaje</p>
+                                <p id="kpi-kilos-prom-viaje" class="text-xs font-bold text-slate-800 dark:text-slate-200">0 Kg / Viaje</p>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+                            <div>
+                                <p class="text-[11px] font-bold text-emerald-600 dark:text-emerald-400">Flota Propia</p>
+                                <p id="kpi-costo-viaje-propio" class="text-[11px] font-semibold text-slate-700 dark:text-slate-300">$0.00 / Viaje</p>
+                                <p id="kpi-costo-kg-propio" class="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">$0.00 / Kg</p>
+                                <p id="kpi-kilos-viaje-propio" class="text-[11px] font-semibold text-slate-600 dark:text-slate-400">0 Kg / Viaje</p>
+                            </div>
+                            <div>
+                                <p class="text-[11px] font-bold text-amber-600 dark:text-amber-400">Flota Tercerizada</p>
+                                <p id="kpi-costo-viaje-tercerizado" class="text-[11px] font-semibold text-slate-700 dark:text-slate-300">$0.00 / Viaje</p>
+                                <p id="kpi-costo-kg-tercerizado" class="text-[11px] font-semibold text-amber-600 dark:text-amber-400">$0.00 / Kg</p>
+                                <p id="kpi-kilos-viaje-tercerizado" class="text-[11px] font-semibold text-slate-600 dark:text-slate-400">0 Kg / Viaje</p>
                             </div>
                         </div>
                     </div>
@@ -328,8 +333,9 @@
             <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 flex flex-col transition-colors">
                 <div class="flex justify-between items-center mb-4">
                     <h3 class="font-bold text-slate-800 dark:text-slate-100 text-sm flex items-center gap-2">
-                        <i class="fa-solid fa-user-tag text-purple-500"></i> Ventas por Colaborador por Sucursal ($)
+                        <i class="fa-solid fa-user-tag text-purple-500"></i> Eficiencia y Ventas por Colaborador por Sucursal
                     </h3>
+                    <span class="text-[10px] bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-700">Comparativa Global</span>
                 </div>
                 <div class="relative w-full h-80">
                     <canvas id="chart-ventas-hc"></canvas>
@@ -627,23 +633,19 @@
             };
 
             fillSelect('filter-sucursal', sucursales);
-            fillSelect('filter-grupo', grupos);
-            fillSelect('filter-flota', flotas);
             fillSelect('filter-mes', meses);
         }
 
         function resetFilters() {
             document.getElementById('filter-sucursal').value = 'ALL';
-            document.getElementById('filter-grupo').value = 'ALL';
-            document.getElementById('filter-flota').value = 'ALL';
             document.getElementById('filter-mes').value = 'ALL';
             applyFilters();
         }
 
         function applyFilters() {
             const selSucursal = document.getElementById('filter-sucursal').value.toLowerCase();
-            const selGrupo = document.getElementById('filter-grupo').value.toLowerCase();
-            const selFlota = document.getElementById('filter-flota').value.toLowerCase();
+            const selGrupo = 'all';
+            const selFlota = 'all';
             const selMes = document.getElementById('filter-mes').value.toLowerCase();
 
             const matchVal = (rowVal, target) => {
@@ -724,24 +726,49 @@
             let fletePropio = 0;
             let fleteTercerizado = 0;
             let totalCostoFlete = 0;
+            let viajesPropio = 0;
+            let viajesTercerizado = 0;
+            let kilosPropio = 0;
+            let kilosTercerizado = 0;
 
             filteredFletes.forEach(r => {
                 const costo = parseNum(getProp(r, 'Costo flete $'));
+                const viajes = parseNum(getProp(r, 'Cant. Viajes'));
+                const kilos = parseNum(getProp(r, 'Kilos Traslado'));
                 const tipoFlota = String(getProp(r, 'Tipo de Flota')).trim().toLowerCase();
 
                 totalCostoFlete += costo;
                 if (tipoFlota.includes('propio')) {
                     fletePropio += costo;
+                    viajesPropio += viajes;
+                    kilosPropio += kilos;
                 } else {
                     fleteTercerizado += costo;
+                    viajesTercerizado += viajes;
+                    kilosTercerizado += kilos;
                 }
             });
+
+            const totalViajes = viajesPropio + viajesTercerizado;
+            const totalKilosTraslado = kilosPropio + kilosTercerizado;
+            const kilosPromedioViaje = totalViajes > 0 ? (totalKilosTraslado / totalViajes) : 0;
 
             const factorImpacto = totalVentas > 0 ? (totalCostoFlete / totalVentas) : 0;
             const impactoPropio = totalVentas > 0 ? (fletePropio / totalVentas) : 0;
             const impactoTercerizado = totalVentas > 0 ? (fleteTercerizado / totalVentas) : 0;
             const porcentajeFlete = totalVentas > 0 ? ((totalCostoFlete / totalVentas) * 100) : 0;
-            const costoKgFlete = totalKilosVendidos > 0 ? (totalCostoFlete / totalKilosVendidos) : 0;
+            
+            const kilosParaGlobal = totalKilosTraslado > 0 ? totalKilosTraslado : totalKilosVendidos;
+            const costoKgFlete = kilosParaGlobal > 0 ? (totalCostoFlete / kilosParaGlobal) : 0;
+
+            const costoViajePropio = viajesPropio > 0 ? (fletePropio / viajesPropio) : 0;
+            const costoViajeTercerizado = viajesTercerizado > 0 ? (fleteTercerizado / viajesTercerizado) : 0;
+
+            const costoKgPropio = kilosPropio > 0 ? (fletePropio / kilosPropio) : 0;
+            const costoKgTercerizado = kilosTercerizado > 0 ? (fleteTercerizado / kilosTercerizado) : 0;
+
+            const kilosPromPropio = viajesPropio > 0 ? (kilosPropio / viajesPropio) : 0;
+            const kilosPromTercerizado = viajesTercerizado > 0 ? (kilosTercerizado / viajesTercerizado) : 0;
 
             // --- Cálculo de Headcount (Colaboradores) ---
             const getHCVal = (row) => {
@@ -802,6 +829,15 @@
             document.getElementById('kpi-costo-total-flete').textContent = formatUSD(totalCostoFlete);
             document.getElementById('kpi-porcentaje-flete').textContent = porcentajeFlete.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '%';
             document.getElementById('kpi-costo-kg-flete').textContent = formatUSD(costoKgFlete) + ' / Kg';
+            document.getElementById('kpi-kilos-prom-viaje').textContent = formatNumber(kilosPromedioViaje) + ' Kg / Viaje';
+
+            document.getElementById('kpi-costo-viaje-propio').textContent = formatUSD(costoViajePropio) + ' / Viaje';
+            document.getElementById('kpi-costo-kg-propio').textContent = formatUSD(costoKgPropio) + ' / Kg';
+            document.getElementById('kpi-kilos-viaje-propio').textContent = formatNumber(kilosPromPropio) + ' Kg / Viaje';
+
+            document.getElementById('kpi-costo-viaje-tercerizado').textContent = formatUSD(costoViajeTercerizado) + ' / Viaje';
+            document.getElementById('kpi-costo-kg-tercerizado').textContent = formatUSD(costoKgTercerizado) + ' / Kg';
+            document.getElementById('kpi-kilos-viaje-tercerizado').textContent = formatNumber(kilosPromTercerizado) + ' Kg / Viaje';
 
             document.getElementById('kpi-ventas-colaborador').textContent = formatUSD(ventasPorColaborador);
             document.getElementById('kpi-total-colaboradores').textContent = formatNumber(totalColaboradores);
@@ -1028,14 +1064,39 @@
             });
 
             // --- 4. Chart Sales per Employee by Branch ($) ---
+            const selGrupo = 'all';
             const selMes = document.getElementById('filter-mes').value.toLowerCase();
+
+            const matchVal = (rowVal, target) => {
+                if (target === 'all') return true;
+                return String(rowVal || '').trim().toLowerCase() === target;
+            };
+
+            const hasProp = (row, propName) => {
+                return row && Object.keys(row).some(k => k.trim().toLowerCase() === propName.toLowerCase());
+            };
+
+            // Para este gráfico, filtramos solo por GRUPO y MES para conservar la comparativa de TODAS las sucursales
+            const hcVentasRaw = rawVentas.filter(r => {
+                const grp = getProp(r, 'Grupo');
+                const mes = getProp(r, 'Mes');
+                return matchVal(grp, selGrupo) && matchVal(mes, selMes);
+            });
+
+            const hcHCRaw = rawHC.filter(r => {
+                const grp = getProp(r, 'Grupo');
+                const mes = getProp(r, 'Mes');
+                const matchGrp = !hasProp(r, 'Grupo') || matchVal(grp, selGrupo);
+                const matchMes = !hasProp(r, 'Mes') || matchVal(mes, selMes);
+                return matchGrp && matchMes;
+            });
+
             const sucursalesSet = new Set();
-            
-            filteredVentas.forEach(r => {
+            hcVentasRaw.forEach(r => {
                 const s = getProp(r, 'SUCURSAL') || getProp(r, 'Sucursal');
                 if (s) sucursalesSet.add(s.trim());
             });
-            filteredHC.forEach(r => {
+            hcHCRaw.forEach(r => {
                 const s = getProp(r, 'Sucursal') || getProp(r, 'SUCURSAL');
                 if (s) sucursalesSet.add(s.trim());
             });
@@ -1048,7 +1109,6 @@
                 });
                 if (key) return parseNum(row[key]);
 
-                // Búsqueda alternativa por valor numérico
                 for (let k of Object.keys(row)) {
                     const l = k.trim().toLowerCase();
                     if (l !== 'sucursal' && l !== 'grupo' && l !== 'mes' && l !== 'fecha' && l !== '') {
@@ -1067,7 +1127,7 @@
                 hcSucursal[suc] = 0;
             });
 
-            filteredVentas.forEach(r => {
+            hcVentasRaw.forEach(r => {
                 const suc = (getProp(r, 'SUCURSAL') || getProp(r, 'Sucursal')).trim();
                 if (suc) {
                     ventasSucursal[suc] = (ventasSucursal[suc] || 0) + parseNum(getProp(r, 'total Ventas'));
@@ -1075,7 +1135,7 @@
             });
 
             sucursalesSet.forEach(suc => {
-                const hcForSuc = filteredHC.filter(r => {
+                const hcForSuc = hcHCRaw.filter(r => {
                     const s = (getProp(r, 'Sucursal') || getProp(r, 'SUCURSAL')).trim();
                     return s.toLowerCase() === suc.toLowerCase();
                 });
@@ -1108,6 +1168,7 @@
                 const hc = hcSucursal[suc] || 0;
                 return hc > 0 ? (v / hc) : 0;
             });
+            const dataHCSucursal = labelsSucursales.map(suc => hcSucursal[suc] || 0);
 
             if (chartVentasHC) chartVentasHC.destroy();
             const ctxVentasHC = document.getElementById('chart-ventas-hc').getContext('2d');
@@ -1115,12 +1176,27 @@
                 type: 'bar',
                 data: {
                     labels: labelsSucursales,
-                    datasets: [{
-                        label: 'Ventas / Colaborador ($)',
-                        data: dataVentasPorHC,
-                        backgroundColor: '#a855f7',
-                        borderRadius: 6
-                    }]
+                    datasets: [
+                        {
+                            type: 'bar',
+                            label: 'Ventas / Colaborador ($)',
+                            data: dataVentasPorHC,
+                            backgroundColor: '#a855f7',
+                            borderRadius: 6,
+                            yAxisID: 'y'
+                        },
+                        {
+                            type: 'line',
+                            label: 'N° Colaboradores',
+                            data: dataHCSucursal,
+                            borderColor: '#06b6d4',
+                            backgroundColor: '#06b6d4',
+                            borderWidth: 2,
+                            pointRadius: 5,
+                            pointHoverRadius: 7,
+                            yAxisID: 'y1'
+                        }
+                    ]
                 },
                 options: {
                     responsive: true,
@@ -1131,9 +1207,12 @@
                             callbacks: {
                                 label: (context) => {
                                     const suc = context.label;
-                                    const val = context.parsed.y;
                                     const hc = hcSucursal[suc] || 0;
-                                    return ` Ventas/HC: ${formatUSD(val)} (${formatNumber(hc)} colaboradores)`;
+                                    if (context.dataset.yAxisID === 'y') {
+                                        return ` Ventas/HC: ${formatUSD(context.parsed.y)}`;
+                                    } else {
+                                        return ` N° Colaboradores: ${formatNumber(context.parsed.y)}`;
+                                    }
                                 }
                             }
                         }
@@ -1141,12 +1220,28 @@
                     scales: {
                         x: { ticks: { color: themeColors.textColor }, grid: { color: themeColors.gridColor } },
                         y: {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
                             beginAtZero: true,
+                            title: { display: true, text: 'Ventas / HC ($)', color: themeColors.textColor },
                             ticks: { 
                                 color: themeColors.textColor,
                                 callback: (val) => formatUSD(val) 
                             },
                             grid: { color: themeColors.gridColor }
+                        },
+                        y1: {
+                            type: 'linear',
+                            display: true,
+                            position: 'right',
+                            beginAtZero: true,
+                            title: { display: true, text: 'N° Colaboradores', color: themeColors.textColor },
+                            ticks: { 
+                                color: themeColors.textColor,
+                                precision: 0
+                            },
+                            grid: { drawOnChartArea: false } // Evita superposición de líneas de cuadrícula
                         }
                     }
                 }
