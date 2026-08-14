@@ -1303,13 +1303,25 @@
                 }
             });
 
-            const labelsSucursales = Array.from(sucursalesSet).sort((a, b) => a.localeCompare(b, 'es'));
-            const dataVentasPorHC = labelsSucursales.map(suc => {
+            // Ordenar de mayor a menor por Ventas/HC y calcular promedio global
+            let totalVentasGlobalHC = 0;
+            let totalHCGlobalHC = 0;
+
+            const sucursalStats = Array.from(sucursalesSet).map(suc => {
                 const v = ventasSucursal[suc] || 0;
                 const hc = hcSucursal[suc] || 0;
-                return hc > 0 ? (v / hc) : 0;
-            });
-            const dataHCSucursal = labelsSucursales.map(suc => hcSucursal[suc] || 0);
+                const salesPerHC = hc > 0 ? (v / hc) : 0;
+                totalVentasGlobalHC += v;
+                totalHCGlobalHC += hc;
+                return { name: suc, salesPerHC, hc };
+            }).sort((a, b) => b.salesPerHC - a.salesPerHC);
+
+            const labelsSucursales = sucursalStats.map(s => s.name);
+            const dataVentasPorHC = sucursalStats.map(s => s.salesPerHC);
+            const dataHCSucursal = sucursalStats.map(s => s.hc);
+
+            const promedioVentasHC = totalHCGlobalHC > 0 ? (totalVentasGlobalHC / totalHCGlobalHC) : 0;
+            const dataPromedioHC = labelsSucursales.map(() => promedioVentasHC);
 
             if (chartVentasHC) chartVentasHC.destroy();
             const ctxVentasHC = document.getElementById('chart-ventas-hc').getContext('2d');
@@ -1324,6 +1336,17 @@
                             data: dataVentasPorHC,
                             backgroundColor: '#a855f7',
                             borderRadius: 6,
+                            yAxisID: 'y'
+                        },
+                        {
+                            type: 'line',
+                            label: 'Promedio Ventas/HC ($)',
+                            data: dataPromedioHC,
+                            borderColor: '#f59e0b',
+                            borderWidth: 2,
+                            borderDash: [6, 4],
+                            pointRadius: 0,
+                            fill: false,
                             yAxisID: 'y'
                         },
                         {
@@ -1347,9 +1370,9 @@
                         tooltip: {
                             callbacks: {
                                 label: (context) => {
-                                    const suc = context.label;
-                                    const hc = hcSucursal[suc] || 0;
-                                    if (context.dataset.yAxisID === 'y') {
+                                    if (context.dataset.label.includes('Promedio')) {
+                                        return ` Promedio: ${formatUSD(context.parsed.y)}`;
+                                    } else if (context.dataset.yAxisID === 'y') {
                                         return ` Ventas/HC: ${formatUSD(context.parsed.y)}`;
                                     } else {
                                         return ` N° Colaboradores: ${formatNumber(context.parsed.y)}`;
@@ -1382,7 +1405,7 @@
                                 color: themeColors.textColor,
                                 precision: 0
                             },
-                            grid: { drawOnChartArea: false } // Evita superposición de líneas de cuadrícula
+                            grid: { drawOnChartArea: false }
                         }
                     }
                 }
