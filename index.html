@@ -313,11 +313,11 @@
                     </div>
                 </div>
 
-                <!-- Top 10 Sucursales en Ventas por Colaborador -->
+                <!-- Top 5 Sucursales en Ventas por Colaborador -->
                 <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 flex flex-col transition-colors">
                     <div class="flex justify-between items-center mb-4">
                         <h3 class="font-bold text-slate-800 dark:text-slate-100 text-sm flex items-center gap-2">
-                            <i class="fa-solid fa-trophy text-amber-500"></i> Top 10 - Ventas por Colaborador
+                            <i class="fa-solid fa-trophy text-amber-500"></i> Top 5 - Ventas por Colaborador
                         </h3>
                         <span class="text-[10px] bg-purple-100 dark:bg-purple-900/50 text-purple-700 dark:text-purple-300 font-semibold px-2.5 py-0.5 rounded-full">Ranking Sucursales</span>
                     </div>
@@ -1187,13 +1187,13 @@
             const listEl = document.getElementById('top10-ventas-hc-list');
             if (!listEl) return;
 
-            const top10 = stats.slice(0, 10);
-            if (top10.length === 0) {
+            const top5 = stats.slice(0, 5);
+            if (top5.length === 0) {
                 listEl.innerHTML = `<li class="text-center py-8 text-slate-400 text-xs">Sin datos disponibles</li>`;
                 return;
             }
 
-            listEl.innerHTML = top10.map((item, idx) => {
+            listEl.innerHTML = top5.map((item, idx) => {
                 let rankBadgeClass = "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400 font-semibold";
                 let trophyIcon = "";
 
