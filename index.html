@@ -270,13 +270,17 @@
                             </div>
                         </div>
 
-                        <div class="grid grid-cols-2 gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+                        <div class="grid grid-cols-3 gap-1.5 pt-2 border-t border-slate-100 dark:border-slate-800">
                             <div>
-                                <p class="text-[11px] text-slate-500 dark:text-slate-400 font-medium uppercase">Flete / Kg (Global)</p>
+                                <p class="text-[10px] text-slate-500 dark:text-slate-400 font-medium uppercase truncate" title="Valor del Viaje (Ventas / Viajes)">Valor / Viaje</p>
+                                <p id="kpi-valor-viaje" class="text-xs font-bold text-amber-600 dark:text-amber-400">$0.00 / Viaje</p>
+                            </div>
+                            <div>
+                                <p class="text-[10px] text-slate-500 dark:text-slate-400 font-medium uppercase truncate" title="Flete / Kg (Global)">Flete / Kg</p>
                                 <p id="kpi-costo-kg-flete" class="text-xs font-bold text-slate-800 dark:text-slate-200">$0.00 / Kg</p>
                             </div>
                             <div>
-                                <p class="text-[11px] text-slate-500 dark:text-slate-400 font-medium uppercase">Kilos Prom. / Viaje</p>
+                                <p class="text-[10px] text-slate-500 dark:text-slate-400 font-medium uppercase truncate" title="Kilos Prom. / Viaje">Kg Prom. / Viaje</p>
                                 <p id="kpi-kilos-prom-viaje" class="text-xs font-bold text-slate-800 dark:text-slate-200">0 Kg / Viaje</p>
                             </div>
                         </div>
@@ -784,6 +788,7 @@
             const totalViajes = viajesPropio + viajesTercerizado;
             const totalKilosTraslado = kilosPropio + kilosTercerizado;
             const kilosPromedioViaje = totalViajes > 0 ? (totalKilosTraslado / totalViajes) : 0;
+            const valorViaje = totalViajes > 0 ? (totalVentas / totalViajes) : 0;
 
             const factorImpacto = totalVentas > 0 ? (totalCostoFlete / totalVentas) : 0;
             const impactoPropio = totalVentas > 0 ? (fletePropio / totalVentas) : 0;
@@ -961,6 +966,7 @@
 
             document.getElementById('kpi-costo-total-flete').textContent = formatUSD(totalCostoFlete);
             document.getElementById('kpi-porcentaje-flete').textContent = porcentajeFlete.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '%';
+            document.getElementById('kpi-valor-viaje').textContent = formatUSD(valorViaje) + ' / Viaje';
             document.getElementById('kpi-costo-kg-flete').textContent = formatUSD(costoKgFlete) + ' / Kg';
             document.getElementById('kpi-kilos-prom-viaje').textContent = formatNumber(kilosPromedioViaje) + ' Kg / Viaje';
 
