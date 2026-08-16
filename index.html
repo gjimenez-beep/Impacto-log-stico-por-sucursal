@@ -276,6 +276,18 @@
             <!-- Charts Grid -->
             <section class="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
+                <!-- Chart 0: Evolucion Mensual de Ventas -->
+                <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 flex flex-col transition-colors">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="font-bold text-slate-800 dark:text-slate-100 text-sm flex items-center gap-2">
+                            <i class="fa-solid fa-chart-area text-emerald-500"></i> Evolución Mensual de Ventas ($)
+                        </h3>
+                    </div>
+                    <div class="relative w-full h-72">
+                        <canvas id="chart-ventas-evolucion"></canvas>
+                    </div>
+                </div>
+
                 <!-- Chart 1: Evolucion del Impacto Logistico por Mes -->
                 <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 flex flex-col transition-colors">
                     <div class="flex justify-between items-center mb-4">
@@ -297,6 +309,18 @@
                     </div>
                     <div class="relative w-full h-72 flex items-center justify-center">
                         <canvas id="chart-flota"></canvas>
+                    </div>
+                </div>
+
+                <!-- Chart 2B: Evolucion de Viajes Diarios por Tipo de Flota -->
+                <div class="bg-white dark:bg-slate-900 p-5 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 flex flex-col transition-colors">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="font-bold text-slate-800 dark:text-slate-100 text-sm flex items-center gap-2">
+                            <i class="fa-solid fa-calendar-days text-indigo-500"></i> Cantidad de Viajes Diarios (Días del Mes)
+                        </h3>
+                    </div>
+                    <div class="relative w-full h-72">
+                        <canvas id="chart-viajes-diarios"></canvas>
                     </div>
                 </div>
 
@@ -429,8 +453,10 @@
         let rawChoferes = [];
 
         // Chart instances
+        let chartVentasEvolucion = null;
         let chartTendencia = null;
         let chartFlota = null;
+        let chartViajesDiarios = null;
         let chartVentasHC = null;
 
         // Dark Mode Control
@@ -474,6 +500,32 @@
             str = str.replace(/,/g, '.');
             const num = parseFloat(str);
             return isNaN(num) ? 0 : num;
+        }
+
+        function getDayFromDate(dateStr) {
+            if (!dateStr) return null;
+            const str = String(dateStr).trim();
+            if (!str) return null;
+            const parts = str.split(/[\/\-\.]/);
+            if (parts.length === 3) {
+                if (parts[0].length === 4) {
+                    const d = parseInt(parts[2], 10);
+                    if (!isNaN(d) && d >= 1 && d <= 31) return d;
+                } else {
+                    const d = parseInt(parts[0], 10);
+                    if (!isNaN(d) && d >= 1 && d <= 31) return d;
+                }
+            }
+            const dObj = new Date(str);
+            if (!isNaN(dObj.getTime())) {
+                return dObj.getDate();
+            }
+            const numMatch = str.match(/\d+/);
+            if (numMatch) {
+                const val = parseInt(numMatch[0], 10);
+                if (val >= 1 && val <= 31) return val;
+            }
+            return null;
         }
 
         // Format number in Spanish format ($1.234,56)
@@ -821,14 +873,16 @@
         function renderCharts(filteredFletes, filteredVentas, filteredHC) {
             const themeColors = getThemeColors();
 
-            // --- 1. Chart Monthly Trend Impact % ---
+            // --- 0. Chart Monthly Sales Evolution ---
             const mesesMap = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
             const ventasByMonth = {};
+            const kilosByMonth = {};
             const fletePropioByMonth = {};
             const fleteTercerizadoByMonth = {};
 
             mesesMap.forEach(m => {
                 ventasByMonth[m] = 0;
+                kilosByMonth[m] = 0;
                 fletePropioByMonth[m] = 0;
                 fleteTercerizadoByMonth[m] = 0;
             });
@@ -837,6 +891,7 @@
                 const m = getProp(r, 'Mes').toLowerCase();
                 if (ventasByMonth.hasOwnProperty(m)) {
                     ventasByMonth[m] += parseNum(getProp(r, 'total Ventas'));
+                    kilosByMonth[m] += parseNum(getProp(r, 'TOTAL KILOS'));
                 }
             });
 
@@ -857,6 +912,61 @@
             const activeMonths = mesesMap.filter(m => (ventasByMonth[m] > 0 || fletePropioByMonth[m] > 0 || fleteTercerizadoByMonth[m] > 0));
             const labelsMonths = activeMonths.map(m => m.charAt(0).toUpperCase() + m.slice(1));
 
+            const dataVentasM = activeMonths.map(m => ventasByMonth[m]);
+
+            if (chartVentasEvolucion) chartVentasEvolucion.destroy();
+            const ctxVentasEvolucion = document.getElementById('chart-ventas-evolucion').getContext('2d');
+            chartVentasEvolucion = new Chart(ctxVentasEvolucion, {
+                type: 'line',
+                data: {
+                    labels: labelsMonths,
+                    datasets: [
+                        {
+                            label: 'Total Ventas ($)',
+                            data: dataVentasM,
+                            borderColor: '#10b981',
+                            backgroundColor: 'rgba(16, 185, 129, 0.12)',
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.35,
+                            pointRadius: 4,
+                            pointHoverRadius: 6
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'top', labels: { color: themeColors.textColor } },
+                        tooltip: {
+                            callbacks: {
+                                label: (context) => {
+                                    const mIndex = activeMonths[context.dataIndex];
+                                    const kilos = kilosByMonth[mIndex];
+                                    return [
+                                        ` Ventas: ${formatUSD(context.parsed.y)}`,
+                                        ` Kilos: ${formatNumber(kilos)} Kg`
+                                    ];
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: { ticks: { color: themeColors.textColor }, grid: { color: themeColors.gridColor } },
+                        y: {
+                            beginAtZero: true,
+                            ticks: { 
+                                color: themeColors.textColor,
+                                callback: (val) => formatUSD(val)
+                            },
+                            grid: { color: themeColors.gridColor }
+                        }
+                    }
+                }
+            });
+
+            // --- 1. Chart Monthly Trend Impact % ---
             const dataImpactoTotal = activeMonths.map(m => {
                 const v = ventasByMonth[m];
                 const f = fletePropioByMonth[m] + fleteTercerizadoByMonth[m];
@@ -957,6 +1067,36 @@
 
             if (chartFlota) chartFlota.destroy();
             const ctxFlota = document.getElementById('chart-flota').getContext('2d');
+
+            // Plugin para dibujar la etiqueta de porcentaje en el gráfico
+            const percentagePlugin = {
+                id: 'percentagePlugin',
+                afterDraw(chart) {
+                    const { ctx } = chart;
+                    const dataset = chart.data.datasets[0];
+                    const total = dataset.data.reduce((acc, val) => acc + val, 0);
+                    if (total === 0) return;
+
+                    chart.getDatasetMeta(0).data.forEach((element, index) => {
+                        const val = dataset.data[index];
+                        if (!val || val === 0) return;
+                        const pct = (val / total) * 100;
+                        const pctStr = formatPercent(pct);
+                        
+                        const { x, y } = element.tooltipPosition();
+                        ctx.save();
+                        ctx.fillStyle = '#ffffff';
+                        ctx.font = 'bold 14px Inter, sans-serif';
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+                        ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+                        ctx.shadowBlur = 4;
+                        ctx.fillText(pctStr, x, y);
+                        ctx.restore();
+                    });
+                }
+            };
+
             chartFlota = new Chart(ctxFlota, {
                 type: 'doughnut',
                 data: {
@@ -984,6 +1124,80 @@
                                     return ` Costo: ${formatUSD(val)} (${formatNumber(viajes)} viajes)`;
                                 }
                             }
+                        }
+                    }
+                },
+                plugins: [percentagePlugin]
+            });
+
+            // --- 2B. Chart Daily Trips Evolution (Días del mes) ---
+            const viajesPropioPorDia = Array(31).fill(0);
+            const viajesTercerizadoPorDia = Array(31).fill(0);
+
+            filteredFletes.forEach(r => {
+                const fechaStr = getProp(r, 'Fecha');
+                const day = getDayFromDate(fechaStr);
+                if (day && day >= 1 && day <= 31) {
+                    const viajes = parseNum(getProp(r, 'Cant. Viajes'));
+                    const tipoFlota = String(getProp(r, 'Tipo de Flota')).trim().toLowerCase();
+                    if (tipoFlota.includes('propio')) {
+                        viajesPropioPorDia[day - 1] += viajes;
+                    } else {
+                        viajesTercerizadoPorDia[day - 1] += viajes;
+                    }
+                }
+            });
+
+            const daysLabels = Array.from({length: 31}, (_, i) => `Día ${i + 1}`);
+
+            if (chartViajesDiarios) chartViajesDiarios.destroy();
+            const ctxViajesDiarios = document.getElementById('chart-viajes-diarios').getContext('2d');
+            chartViajesDiarios = new Chart(ctxViajesDiarios, {
+                type: 'line',
+                data: {
+                    labels: daysLabels,
+                    datasets: [
+                        {
+                            label: 'Flota Propia (Viajes)',
+                            data: viajesPropioPorDia,
+                            borderColor: '#10b981',
+                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                            borderWidth: 2,
+                            fill: false,
+                            tension: 0.35,
+                            pointRadius: 3,
+                            pointHoverRadius: 5
+                        },
+                        {
+                            label: 'Flota Tercerizada (Viajes)',
+                            data: viajesTercerizadoPorDia,
+                            borderColor: '#f97316',
+                            backgroundColor: 'rgba(249, 115, 22, 0.1)',
+                            borderWidth: 2,
+                            fill: false,
+                            tension: 0.35,
+                            pointRadius: 3,
+                            pointHoverRadius: 5
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'top', labels: { color: themeColors.textColor } },
+                        tooltip: {
+                            callbacks: {
+                                label: (context) => ` ${context.dataset.label}: ${formatNumber(context.parsed.y)} viajes`
+                            }
+                        }
+                    },
+                    scales: {
+                        x: { ticks: { color: themeColors.textColor, font: { size: 10 } }, grid: { color: themeColors.gridColor } },
+                        y: {
+                            beginAtZero: true,
+                            ticks: { color: themeColors.textColor, precision: 0 },
+                            grid: { color: themeColors.gridColor }
                         }
                     }
                 }
